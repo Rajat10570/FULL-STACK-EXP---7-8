@@ -1,62 +1,28 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import './App.css'; // Assuming you create a CSS file for styling
+const express = require('express');
+const cors = require('cors');
+const app = express();
+const PORT = 3000;
 
-// Component to fetch and display products
-function ProductList() {
-    const [products, setProducts] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+// Middleware: Enable CORS for the React app running on port 3001
+app.use(cors({
+    origin: 'http://localhost:3001' 
+}));
+app.use(express.json());
 
-    // useEffect runs once after the component mounts
-    useEffect(() => {
-        const fetchProducts = async () => {
-            try {
-                // Use Axios to send a GET request to the Express API
-                const response = await axios.get('http://localhost:3000/api/products');
-                setProducts(response.data);
-                setError(null);
-            } catch (err) {
-                console.error("Error fetching data: ", err);
-                setError("Failed to fetch products. Is the backend running?");
-            } finally {
-                setLoading(false);
-            }
-        };
+const products = [
+    { id: 1, name: 'Laptop', price: 1200 },
+    { id: 2, name: 'Mouse', price: 25 },
+    { id: 3, name: 'Keyboard', price: 45 }
+];
 
-        fetchProducts();
-    }, []); // Empty dependency array ensures it runs only once
+// API Route to get the list of products
+app.get('/api/products', (req, res) => {
+    // Simulate a network delay for better testing experience
+    setTimeout(() => {
+        res.json(products);
+    }, 500);
+});
 
-    if (loading) {
-        return <div className="loading">Loading products...</div>;
-    }
-
-    if (error) {
-        return <div className="error">{error}</div>;
-    }
-
-    return (
-        <div className="product-container">
-            <h1>Product List</h1>
-            <div className="product-cards">
-                {products.map(product => (
-                    <div className="product-card" key={product.id}>
-                        <h2>{product.name}</h2>
-                        <p className="price">Price: ${product.price}</p>
-                        <button className="buy-button">Buy Now</button>
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
-}
-
-function App() {
-    return (
-        <div className="App">
-            <ProductList />
-        </div>
-    );
-}
-
-export default App;
+app.listen(PORT, () => {
+    console.log(`Backend API running on http://localhost:${PORT}`);
+});
